@@ -1,0 +1,33 @@
+<launch>
+  <arg name="teleop_can_port" default="can0" />
+  <arg name="robot_can_port" default="can1" />
+  <arg name="auto_enable" default="true" />
+  <!-- <include file="$(find piper_description)/launch/piper_with_gripper/display_xacro.launch"/> -->
+  
+  <!-- 设置 robot_description 参数，joint_state_publisher_gui 需要此参数 -->
+  <param
+    name="robot_description"
+    textfile="$(find piper_description)/urdf/piper_description.xacro" />
+  
+  <!-- 启动Teleop joint_state_publisher_gui -->
+  <!-- <node name="joint_state_publisher_gui_left" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" output="screen">
+    <param name="rate" value="100" />
+    <remap from="/joint_states" to="/teleop/arm_left/joint_ctrl_single" />
+  </node> -->
+  
+  <!-- 启动Robot joint_state_publisher_gui -->
+  <!-- <node name="joint_state_publisher_gui_right" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" output="screen">
+    <param name="rate" value="100" />
+    <remap from="/joint_states" to="/teleop/arm_robot/joint_ctrl_single" />
+  </node> -->
+  
+  <!-- 启动机械臂节点 -->
+  <node name="piper_teleop_single_node" pkg="teleop_bridge" type="piper_teleop_single_node.py" output="screen">
+    <param name="teleop_can_port" value="$(arg teleop_can_port)" />
+    <param name="robot_can_port" value="$(arg robot_can_port)" />
+    <param name="auto_enable" value="$(arg auto_enable)" />
+    <param name="gripper_val_mutiple" value="2" />
+    <!-- <param name="rviz_ctrl_flag" value="true" /> -->
+    <param name="girpper_exist" value="true" />
+  </node>
+</launch>
