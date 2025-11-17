@@ -1,5 +1,20 @@
 # How to run?
 
+## 0. Prerequisite
+
+- clone <piper_ros>, <piper_sdk> (need install), <ranger_ros>, <ugv_sdk> and install all dependencies
+- setup master and slave
+    - check ip addresses ```${master}``` and ```${slave}```
+    - master PC:
+        - add ```${master} ${master_name}``` to ```/etc/hosts```
+        - add ```${slave} ${slave_name}``` to ```/etc/hosts```
+        - add ```export ROS_HOSTNAME=${master_name}``` to ```~/.bashrc```
+    - slave PC:
+        - add ```${master} ${master_name}``` to ```/etc/hosts```
+        - add ```${slave} ${slave_name}``` to ```/etc/hosts```
+        - add ```export ROS_HOSTNAME=${slave_name}``` to ```~/.bashrc```
+        - add ```export ROS_MASTER_URI=http://${master_name}:11311``` to ```~/.bashrc```
+
 ## 1. Build
 
 ```bash
