@@ -1,0 +1,7 @@
+<library path="lib/libdm_controllers">
+  <class name="damiao/DmController" type="damiao::DmController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      The basic damiao controller.
+    </description>
+  </class>
+</library>

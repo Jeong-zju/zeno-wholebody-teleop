@@ -1,0 +1,23 @@
+serials:
+  serial0_info:
+    port: /dev/ttyACM0
+    baudrate: 921600
+
+dm_actuators:
+  joint0_motor:
+    port: /dev/ttyACM0
+    type: DM4310
+    can_id: 0x01
+    mst_id: 0x04
+
+  joint1_motor:
+    port: /dev/ttyACM0
+    type: DM4310
+    can_id: 0x02
+    mst_id: 0x05
+
+  joint2_motor:
+    port: /dev/ttyACM0
+    type: DM4310
+    can_id: 0x03
+    mst_id: 0x06

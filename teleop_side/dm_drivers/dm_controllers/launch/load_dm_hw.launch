@@ -1,0 +1,15 @@
+<launch>
+
+    
+    <rosparam file="$(find dm_controllers)/config/dm_motor.yaml" command="load" ns="damiao"/>
+    <rosparam file="$(find dm_hw)/config/dm_loop.yaml" command="load" ns="damiao"/>
+
+    <node name="dm_main" pkg="dm_main" type="dm_main" respawn="false" 
+    clear_params="true" />
+    
+    <rosparam file="$(find dm_controllers)/config/controllers.yaml" command="load" />
+    <node name="controller_loader" pkg="controller_manager" type="spawner"
+          output="screen" args="
+          controllers/dm_controller"/>
+
+</launch>
