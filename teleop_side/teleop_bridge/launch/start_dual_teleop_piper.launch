@@ -22,7 +22,7 @@
   </node> -->
   
   <!-- 启动机械臂节点 -->
-  <node name="piper_dual_teleop_node" pkg="teleop_bridge" type="piper_dual_teleop_node.py" output="screen">
+  <node name="piper_dual_teleop_to_robot_node" pkg="teleop_bridge" type="piper_dual_teleop_to_robot.py" output="screen">
     <param name="left_can_port" value="$(arg left_can_port)" />
     <param name="right_can_port" value="$(arg right_can_port)" />
     <param name="auto_enable" value="$(arg auto_enable)" />
