@@ -1,0 +1,58 @@
+<launch>
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="camera" value="realsense_left" />
+    <arg name="usb_port_id" value="2-1" />
+    <arg name="enable_color" value="true" />
+    <arg name="enable_depth" value="true" />
+    <arg name="enable_sync" value="true" />
+    <arg name="align_depth" value="true" />
+    <arg name="color_width" value="1280" />
+    <arg name="color_height" value="720" />
+    <arg name="color_fps" value="30" />
+    <arg name="depth_width" value="1280" />
+    <arg name="depth_height" value="720" />
+    <arg name="depth_fps" value="30" />
+    <arg name="publish_tf" value="true" />
+    <arg name="tf_prefix" value="realsense_left" />
+  </include>
+
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="camera" value="realsense_right" />
+    <arg name="usb_port_id" value="2-8" />
+    <arg name="enable_color" value="true" />
+    <arg name="enable_depth" value="true" />
+    <arg name="enable_sync" value="true" />
+    <arg name="align_depth" value="true" />
+    <arg name="color_width" value="1280" />
+    <arg name="color_height" value="720" />
+    <arg name="color_fps" value="30" />
+    <arg name="depth_width" value="1280" />
+    <arg name="depth_height" value="720" />
+    <arg name="depth_fps" value="30" />
+    <arg name="publish_tf" value="true" />
+    <arg name="tf_prefix" value="realsense_right" />
+  </include>
+
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <arg name="camera" value="realsense_top" />
+    <arg name="usb_port_id" value="2-2" />
+    <arg name="enable_color" value="true" />
+    <arg name="enable_depth" value="true" />
+    <arg name="enable_sync" value="true" />
+    <arg name="align_depth" value="true" />
+    <arg name="enable_gyro" value="true" />
+    <arg name="enable_accel" value="true" />
+    <arg name="color_width" value="1280" />
+    <arg name="color_height" value="720" />
+    <arg name="color_fps" value="30" />
+    <arg name="depth_width" value="1280" />
+    <arg name="depth_height" value="720" />
+    <arg name="depth_fps" value="30" />
+    <arg name="gyro_fps" value="400" />
+    <arg name="accel_fps" value="250" />
+    <arg name="publish_tf" value="true" />
+    <arg name="tf_prefix" value="realsense_top" />
+  </include>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find piper_bridge)/rviz/dual_basic.rviz" output="screen" />
+</launch>

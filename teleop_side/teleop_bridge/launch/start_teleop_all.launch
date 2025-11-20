@@ -1,0 +1,35 @@
+<launch>
+  <!-- Arguments for CAN ports -->
+  <arg name="left_can_port" default="can_left" />
+  <arg name="right_can_port" default="can_right" />
+  <arg name="auto_enable" default="true" />
+  
+  <!-- Arguments for paddle (damiao) -->
+  <arg name="enable_paddle" default="true" />
+  
+  <!-- Arguments for dual-arm -->
+  <arg name="enable_dual_arm" default="true" />
+  <arg name="gripper_val_mutiple" default="2" />
+  <arg name="girpper_exist" default="true" />
+  
+  <!-- Setup robot_description for joint_state_publisher_gui if needed -->
+  <param
+    name="robot_description"
+    textfile="$(find piper_description)/urdf/piper_description.xacro" />
+  
+  <!-- Launch paddle (damiao) node -->
+  <group if="$(arg enable_paddle)">
+    <include file="$(find dm_controllers)/launch/load_dm_hw.launch" />
+  </group>
+  
+  <!-- Launch dual-arm teleop node -->
+  <group if="$(arg enable_dual_arm)">
+    <node name="piper_dual_teleop_to_robot_node" pkg="teleop_bridge" type="piper_dual_teleop_to_robot.py" output="screen">
+      <param name="left_can_port" value="$(arg left_can_port)" />
+      <param name="right_can_port" value="$(arg right_can_port)" />
+      <param name="auto_enable" value="$(arg auto_enable)" />
+      <param name="gripper_val_mutiple" value="$(arg gripper_val_mutiple)" />
+      <param name="girpper_exist" value="$(arg girpper_exist)" />
+    </node>
+  </group>
+</launch>
