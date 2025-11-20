@@ -29,5 +29,7 @@
     <param name="gripper_val_mutiple" value="2" />
     <!-- <param name="rviz_ctrl_flag" value="true" /> -->
     <param name="girpper_exist" value="true" />
+    <!-- <remap from="/teleop/arm_left/joint_states_single" to="/robot/arm_left/joint_cmd" />
+    <remap from="/teleop/arm_right/joint_states_single" to="/robot/arm_right/joint_cmd" /> -->
   </node>
 </launch>
