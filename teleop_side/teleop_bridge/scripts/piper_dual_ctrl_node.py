@@ -100,7 +100,7 @@ class C_PiperRosNode():
             self.gripper_val_mutiple = 1  # 设置为默认值
         rospy.loginfo("%s is %s", rospy.resolve_name('~gripper_val_mutiple'), self.gripper_val_mutiple)
         # 设置topic和service前缀
-        self.topic_prefix = f'/teleop/arm_{arm_side}/'
+        self.topic_prefix = f'/robot/arm_{arm_side}/'
         # publish
         self.joint_pub = rospy.Publisher(self.topic_prefix + 'joint_states_single', JointState, queue_size=1)
         self.arm_status_pub = rospy.Publisher(self.topic_prefix + 'arm_status', PiperStatusMsg, queue_size=1)
@@ -286,7 +286,7 @@ class C_PiperRosNode():
         """机械臂关节订阅
         
         """
-        rospy.Subscriber(self.topic_prefix + 'joint_ctrl_single', JointState, self.joint_callback, queue_size=1, tcp_nodelay=True)
+        rospy.Subscriber(self.topic_prefix + 'joint_states_single', JointState, self.joint_callback, queue_size=1, tcp_nodelay=True)
         # rospy.Subscriber('/move_group/fake_controller_joint_states', JointState, self.joint_callback)
         rate = rospy.Rate(10)  # 10 Hz
         while not rospy.is_shutdown():
