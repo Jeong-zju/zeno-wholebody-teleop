@@ -51,7 +51,7 @@ y:
 
 z:
   motor_name: "joint0_motor"
-  kp_default: 10
+  kp_default: 20
   kd_default: 1.5
   # repulsive_force_threshold: 5.0
   # pos_haptic_positive: 0.15

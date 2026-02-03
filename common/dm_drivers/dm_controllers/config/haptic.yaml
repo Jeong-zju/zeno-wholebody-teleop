@@ -4,8 +4,8 @@
 
 x:
   motor_name: "joint2_motor"
-  kp_default: 10
-  kd_default: 1.5
+  kp_default: 20
+  kd_default: 2
   repulsive_force_threshold: 100
   pos_haptic_positive: 0
   pos_haptic_negative: 0
@@ -13,8 +13,8 @@ x:
 
 y:
   motor_name: "joint1_motor"
-  kp_default: 10
-  kd_default: 1.5
+  kp_default: 20
+  kd_default: 2
   repulsive_force_threshold: 100
   pos_haptic_positive: 0
   pos_haptic_negative: 0
@@ -22,7 +22,7 @@ y:
 
 z:
   motor_name: "joint0_motor"
-  kp_default: 30.0
+  kp_default: 10
   kd_default: 1.5
   # repulsive_force_threshold: 5.0
   # pos_haptic_positive: 0.15
