@@ -1,4 +1,4 @@
-# How to run?
+# Official Repository of *TriPilot-FF: Coordinated Whole-Body Teleoperation with Force Feedback*
 
 ## 0. Prerequisite
 
