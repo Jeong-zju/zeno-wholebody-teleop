@@ -14,6 +14,8 @@
         - add ```${slave} ${slave_name}``` to ```/etc/hosts```
         - add ```export ROS_HOSTNAME=${slave_name}``` to ```~/.bashrc```
         - add ```export ROS_MASTER_URI=http://${master_name}:11311``` to ```~/.bashrc```
+- install [pymlg](https://github.com/decargroup/pymlg) in your env (recommand python=3.9)
+- install ```pip install -r requirements.txt``` (may report error, recommand to install manually for each package after running and locate missing package)
 - install realsense SDK
     following instructions on https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md and downgrade the version
     ```bash
@@ -40,7 +42,7 @@
 ## 1. Build
 
 ```bash
-<catkin build> or <catkin_make>
+catkin_make
 ```
 
 ## 2. Teleoperation side
@@ -48,12 +50,8 @@
 ### 2.1 Setup paddle (damiao usb2can module)
 
 ```bash
-source devel/setup.bash
-cd src/zeno-wholebody-teleop/teleop_side/bash
-bash setup_teleop.sh
+sudo chmod 777 /dev/ttyACM0
 ```
-
-This script sets permissions for damiao usb2can module.
 
 ### 2.2 Setup dual-arm CAN ports
 
@@ -74,10 +72,13 @@ After setup, launch all teleoperation nodes in a single command:
 
 ```bash
 source devel/setup.bash
-roslaunch teleop_setup start_teleop_all.launch left_can_port:=can_left right_can_port:=can_right auto_enable:=true enable_paddle:=true enable_dual_arm:=true enable_paddle_haptic:=true
+roslaunch teleop_setup start_teleop_all.launch
 ```
 
 **Parameters:**
+
+To modify parameters, edit the launch file `teleop_setup/launch/start_teleop_all.launch` directly.
+
 - `left_can_port`: CAN port name for left arm (default: `can_left`)
 - `right_can_port`: CAN port name for right arm (default: `can_right`)
 - `auto_enable`: Auto enable motors (default: `true`)
@@ -86,6 +87,7 @@ roslaunch teleop_setup start_teleop_all.launch left_can_port:=can_left right_can
 - `enable_dual_arm`: Enable dual-arm teleop node (default: `true`)
 - `gripper_val_mutiple`: Gripper value multiplier (default: `2`)
 - `girpper_exist`: Whether gripper exists (default: `true`)
+- `enable_gravity_compensation`: Enable gravity compensation node (default: `true`)
 
 **Haptic Configuration:**
 
@@ -126,14 +128,12 @@ After setup, launch all robot nodes in a single command:
 
 ```bash
 source devel/setup.bash
-roslaunch robot_setup start_robot_all.launch ranger_can_port:=can0 left_can_port:=can_left right_can_port:=can_right enable_ranger:=true enable_paddle2ranger:=true enable_dual_arm:=true enable_cameras:=true enable_gravity_compensation:=true enable_lidar:=true enable_rviz:=true use_default_rviz:=false enable_handeye_tf:=true camera_left_usb_port:=2-1 camera_right_usb_port:=2-8 camera_top_usb_port:=2-2
-```
-
-```bash
-rosrun piper_ctrl piper_gravity_compensation_node.py
+roslaunch robot_setup start_robot_all.launch
 ```
 
 **Parameters:**
+
+To modify parameters, edit the launch file `robot_setup/launch/start_robot_all.launch` directly.
 
 **CAN ports:**
 - `ranger_can_port`: CAN port name for ranger (default: `can0`)
@@ -151,14 +151,7 @@ rosrun piper_ctrl piper_gravity_compensation_node.py
 
 **Paddle2Ranger:**
 - `enable_paddle2ranger`: Enable paddle2ranger node (default: `true`)
-- `input_angular_min`: Minimum angular input (default: `-0.5`)
-- `input_angular_max`: Maximum angular input (default: `0.5`)
-- `input_linear_min`: Minimum linear input (default: `-0.2`)
-- `input_linear_max`: Maximum linear input (default: `0.2`)
-- `angular_deadzone`: Angular deadzone (default: `0.02`)
-- `linear_deadzone`: Linear deadzone (default: `0.02`)
-- `max_vel`: Maximum velocity (default: `0.25`)
-- `max_angular_vel`: Maximum angular velocity (default: `0.5`)
+- Note: Paddle2Ranger parameters (input ranges, deadzones, max velocities) are configured in `bridge/config/paddle.yaml`
 
 **Dual-arm control:**
 - `enable_dual_arm`: Enable dual-arm control node (default: `true`)
@@ -167,11 +160,21 @@ rosrun piper_ctrl piper_gravity_compensation_node.py
 - `girpper_exist`: Whether gripper exists (default: `true`)
 
 **Cameras:**
-- `enable_cameras`: Enable camera nodes (default: `true`)
-- `camera_left_usb_port`: USB port ID for left camera (default: `2-1`)
-- `camera_right_usb_port`: USB port ID for right camera (default: `2-8`)
-- `camera_top_usb_port`: USB port ID for top camera (default: `2-2`)
+- `enable_camera_left`: Enable left camera node (default: `true`)
+- `enable_camera_right`: Enable right camera node (default: `true`)
+- `enable_camera_top`: Enable top camera node (default: `true`)
+- `camera_left_usb_port`: USB port ID for left camera (default: `2-4.2`)
+- `camera_right_usb_port`: USB port ID for right camera (default: `2-4.4`)
+- `camera_top_usb_port`: USB port ID for top camera (default: `2-4.3`)
 - `enable_rviz`: Enable RViz (default: `true`)
+- `use_default_rviz`: Use default RViz config instead of piper_dual_robot_rviz (default: `false`)
+- `enable_handeye_tf`: Enable hand-eye calibration TF publishing (default: `true`)
+
+**LiDAR and Reachability:**
+- `enable_lidar`: Enable LiDAR node (default: `true`)
+- `enable_reachability`: Enable reachability mask computation (default: `true`)
+- `enable_reachability_ctrl`: Enable reachability-based base control (default: `false`)
+- `enable_lidar_force`: Enable LiDAR-based force feedback for ranger (default: `true`)
 
 **Note:** Use command `rs-enumerate-devices` to find all connected cameras and get their USB port IDs from the `Physical Port` field. The output should contain a line like: `Physical Port: /sys/devices/pci0000:00/0000:00:14.0/usb2/2-1/2-1:1.0/video4linux/video8`. Extract the `2-1` part and use it as the `usb_port_id` parameter.
 
@@ -200,5 +203,6 @@ rosbag record -O demo_001.bag --bz2 -b 4096 \
 /realsense_top/color/image_raw \
 /realsense_top/color/camera_info \
 /realsense_top/aligned_depth_to_color/image_raw \
-/realsense_top/aligned_depth_to_color/camera_info
+/realsense_top/aligned_depth_to_color/camera_info \
+(add anything you like)
 ```

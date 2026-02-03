@@ -72,8 +72,6 @@ namespace damiao
 			// 														   << "threshold: " << cycleTimeErrorThreshold_ << "s");
 		}
 
-		// std::cerr << "fuck" << std::endl;
-
 		hardwareInterface_->read(ros::Time::now(), elapsedTime_, this->cmd_pub_);
 
 		controllerManager_->update(ros::Time::now(), elapsedTime_);
