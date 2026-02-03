@@ -269,7 +269,9 @@ Key parameters:
 **Gravity Compensation**:
 When `enable_gravity=true`, the final torque is computed as:
 
-$$\tau_{\text{final}} = -(\tau_{\text{cmd}} - \tau_{\text{gravity}}) \cdot \text{torque\_scale} + \tau_{\text{gravity}}$$
+$$
+\tau_{\text{final}} = -(\tau_{\text{cmd}} - \tau_{\text{gravity}}) \cdot \text{torque\_scale} + \tau_{\text{gravity}}
+$$
 
 This ensures gravity is fully compensated while scaling the operator's input torque.
 
