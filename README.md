@@ -362,6 +362,7 @@ If intent velocity is unavailable, only paddle velocity is used.
 Intent velocity assists the operator when arms approach workspace limits. It's computed only for "stretched" arms (end-effector distance > threshold) with manipulability below threshold.
 
 **Single Arm**:
+
 $$\mathbf{d}_{\text{intent}} = w_{\text{target}} \cdot \hat{\mathbf{d}}_{\text{ee}} + w_{\text{grad}} \cdot \hat{\mathbf{d}}_{\text{grad}}$$
 
 where $\hat{\mathbf{d}}_{\text{ee}}$ is the normalized end-effector direction and $\hat{\mathbf{d}}_{\text{grad}}$ is the manipulability gradient direction.
@@ -381,11 +382,14 @@ LiDAR scans generate repulsive forces that create haptic feedback on the paddle 
 
 **Distance Weighting Function**:
 
-$$w(r) = \begin{cases}
+$$
+w(r) = 
+\begin{aligned}
 0 & \text{if } r < r_{\min} - \delta \text{ or } r > r_{\text{far}} \\
 w_{\max} (3t^2 - 2t^3) & \text{if } r_{\min} - \delta \leq r < r_{\min} \\
 w_{\max} \left(1 - \frac{r - r_{\min}}{r_{\text{far}} - r_{\min}}\right)^2 & \text{if } r_{\min} \leq r \leq r_{\text{far}}
-\end{cases}$$
+\end{aligned}
+$$
 
 where $t = \frac{r - (r_{\min} - \delta)}{\delta}$.
 
