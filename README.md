@@ -269,9 +269,9 @@ Key parameters:
 **Gravity Compensation**:
 When `enable_gravity=true`, the final torque is computed as:
 
-$$
-\tau_{\text{final}} = -(\tau_{\text{cmd}} - \tau_{\text{gravity}}) \cdot \text{torque\_scale} + \tau_{\text{gravity}}
-$$
+$$\tau_{\text{final}} = -(\tau_{\text{cmd}} - \tau_{\text{gravity}}) \cdot s + \tau_{\text{gravity}}$$
+
+where $s$ is the `torque_scale` parameter.
 
 This ensures gravity is fully compensated while scaling the operator's input torque.
 
@@ -288,7 +288,7 @@ Gravity compensation is implemented by an independent node `piper_gravity_compen
 
 Gravity compensation uses Pinocchio library to compute generalized gravity torques from URDF model:
 
-$$\tau_{\text{gravity}} = \text{computeGeneralizedGravity}(\mathbf{q})$$
+$$\tau_{\text{gravity}} = f_{\text{gravity}}(\mathbf{q})$$
 
 **Joint Scaling**:
 - Joint1-3 (base joints): $\tau_{\text{comp}} = \tau_{\text{gravity}} / 4$ (reduced due to larger reduction ratios)
@@ -367,9 +367,11 @@ $$\mathbf{d}_{\text{intent}} = w_{\text{target}} \cdot \hat{\mathbf{d}}_{\text{e
 where $\hat{\mathbf{d}}_{\text{ee}}$ is the normalized end-effector direction and $\hat{\mathbf{d}}_{\text{grad}}$ is the manipulability gradient direction.
 
 **Dual Arm** (weighted by manipulability deficit):
-$$w_i = \frac{\max(\text{threshold} - m_i, \epsilon)}{\sum_j \max(\text{threshold} - m_j, \epsilon)}$$
+$$w_i = \frac{\max(m_{\text{th}} - m_i, \epsilon)}{\sum_j \max(m_{\text{th}} - m_j, \epsilon)}$$
 
-$$\mathbf{d}_{\text{intent}} = \text{normalize}(w_{\text{left}} \cdot \mathbf{p}_{\text{left}} + w_{\text{right}} \cdot \mathbf{p}_{\text{right}})$$
+where $m_{\text{th}}$ is the manipulability threshold.
+
+$$\mathbf{d}_{\text{intent}} = \frac{w_{\text{left}} \cdot \mathbf{p}_{\text{left}} + w_{\text{right}} \cdot \mathbf{p}_{\text{right}}}{\|w_{\text{left}} \cdot \mathbf{p}_{\text{left}} + w_{\text{right}} \cdot \mathbf{p}_{\text{right}}\|}$$
 
 Arms with lower manipulability (higher deficit) receive higher weights.
 
@@ -380,9 +382,9 @@ LiDAR scans generate repulsive forces that create haptic feedback on the paddle 
 **Distance Weighting Function**:
 
 $$w(r) = \begin{cases}
-0 & r < r_{\min} - \delta \text{ or } r > r_{\text{far}} \\
-w_{\max} \cdot (3t^2 - 2t^3) & r_{\min} - \delta \leq r < r_{\min} \text{ (smoothstep)} \\
-w_{\max} \cdot (1 - \frac{r - r_{\min}}{r_{\text{far}} - r_{\min}})^2 & r_{\min} \leq r \leq r_{\text{far}} \text{ (quadratic)}
+0 & \text{if } r < r_{\min} - \delta \text{ or } r > r_{\text{far}} \\
+w_{\max} (3t^2 - 2t^3) & \text{if } r_{\min} - \delta \leq r < r_{\min} \\
+w_{\max} \left(1 - \frac{r - r_{\min}}{r_{\text{far}} - r_{\min}}\right)^2 & \text{if } r_{\min} \leq r \leq r_{\text{far}}
 \end{cases}$$
 
 where $t = \frac{r - (r_{\min} - \delta)}{\delta}$.
