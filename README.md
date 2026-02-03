@@ -206,3 +206,219 @@ rosbag record -O demo_001.bag --bz2 -b 4096 \
 /realsense_top/aligned_depth_to_color/camera_info \
 (add anything you like)
 ```
+
+## 5. Technical Details
+
+### 5.1 Leader-Follower Architecture
+
+This project adopts a **Leader-Follower (master-slave) teleoperation architecture**, enabling operators to control the Robot-side (Follower) manipulator through the Teleop-side (Leader) manipulator.
+
+#### 5.1.1 System Architecture
+
+The system consists of two independent manipulator systems:
+
+- **Teleop Side (Leader/Master)**:
+  - Topic namespace: `/teleop/arm_left/` and `/teleop/arm_right/`
+  - Function: Manipulator directly operated by the operator, capturing the operator's motion intent
+  - Configuration: Launched using `piper_dual_teleop.launch`, loads `piper_ctrl_mit_gravity.yaml` configuration
+
+- **Robot Side (Follower/Slave)**:
+  - Topic namespace: `/robot/arm_left/` and `/robot/arm_right/`
+  - Function: Manipulator that executes actual tasks, following the Leader's motion
+  - Configuration: Launched using `piper_dual_robot.launch`, loads `piper_ctrl_mit.yaml` configuration
+
+#### 5.1.2 Communication Flow
+
+Leader and Follower communicate through ROS topics:
+
+```
+Teleop Side (Leader)                 Robot Side (Follower)
+─────────────────                    ─────────────────
+joint_states_single  ──────────────> joint_pos_cmd
+                                      (position command)
+                                      
+joint_states_single  ──────────────> joint_tor_cmd
+                                      (torque command, for force feedback)
+                                      
+                    <──────────────  joint_states_single
+                    (joint state feedback)
+                    
+                    <──────────────  joint_states_compensated
+                    (gravity compensation torque)
+```
+
+### 5.2 MIT Control Mode
+
+MIT control mode is a **hybrid position-velocity-torque control** method that allows simultaneous control of position, velocity, and torque, providing more flexible control capabilities.
+
+#### 5.2.1 MIT Control Equation
+
+The core formula of MIT control is:
+
+$$
+\tau_i = K_{p,i}\big(q_{i,\mathrm{des}}-q_i\big) + K_{d,i}\big(\dot q_{i,\mathrm{des}}-\dot q_i\big) + \tau_{i,\mathrm{ff}}
+$$
+
+#### 5.2.2 MIT Control Parameters
+
+Key parameters:
+- `enable_pos`, `enable_vel`, `enable_tor`: Enable position/velocity/torque control
+- `kp`, `kd`: Proportional and derivative gains (per-joint or global)
+- `torque_scale`: Torque scaling factor for operator input
+
+**Gravity Compensation**:
+When `enable_gravity=true`, the final torque is computed as:
+
+$$\tau_{\text{final}} = -(\tau_{\text{cmd}} - \tau_{\text{gravity}}) \cdot \text{torque\_scale} + \tau_{\text{gravity}}$$
+
+This ensures gravity is fully compensated while scaling the operator's input torque.
+
+### 5.3 Gravity Compensation Technical Details
+
+#### 5.3.1 Gravity Compensation Node
+
+Gravity compensation is implemented by an independent node `piper_gravity_compensation_node.py`, which:
+
+- **Subscribes to**: `/robot/arm_left/joint_states_single` and `/robot/arm_right/joint_states_single`
+- **Publishes to**: `/robot/arm_left/joint_states_compensated` and `/robot/arm_right/joint_states_compensated`
+
+#### 5.3.2 Gravity Compensation Calculation
+
+Gravity compensation uses Pinocchio library to compute generalized gravity torques from URDF model:
+
+$$\tau_{\text{gravity}} = \text{computeGeneralizedGravity}(\mathbf{q})$$
+
+**Joint Scaling**:
+- Joint1-3 (base joints): $\tau_{\text{comp}} = \tau_{\text{gravity}} / 4$ (reduced due to larger reduction ratios)
+- Joint4-6 (wrist joints): $\tau_{\text{comp}} = \tau_{\text{gravity}}$ (unchanged)
+
+### 5.4 Topic Mapping Summary
+
+#### 5.4.1 Teleop Side Topic Flow
+
+```
+Operator moves Leader manipulator
+    ↓
+/teleop/arm_left/joint_states_single (publish)
+    ↓
+    ├─> /teleop/arm_left/joint_pos_cmd (self-subscribe, position control)
+    ├─> /robot/arm_left/joint_pos_cmd (Robot side subscribes, position following)
+    └─> /robot/arm_left/joint_tor_cmd (Robot side subscribes, force feedback)
+    
+/robot/arm_left/joint_states_single (Robot side publishes)
+    ↓
+    ├─> /teleop/arm_left/joint_tor_cmd (Teleop side subscribes, force feedback)
+    └─> /robot/arm_left/joint_states_compensated (gravity compensation node subscribes)
+    
+/robot/arm_left/joint_states_compensated (gravity compensation node publishes)
+    ↓
+    └─> /teleop/arm_left/joint_states_compensated (Teleop side subscribes, gravity compensation)
+```
+
+#### 5.4.2 Robot Side Topic Flow
+
+```
+/robot/arm_left/joint_pos_cmd (receive position command)
+    ↓
+Robot side MIT control node
+    ↓
+CAN bus → Motor driver
+    ↓
+/robot/arm_left/joint_states_single (publish joint state)
+    ↓
+    ├─> Gravity compensation node
+    ├─> Teleop side (force feedback)
+    └─> Other monitoring nodes
+```
+
+### 5.5 Control Frequencies
+
+- **Publish rate**: 100 Hz (`publish_rate`)
+- **Control rate**: 50 Hz (`control_rate`)
+- **Subscribe rate**: 50 Hz (`subscribe_rate`)
+
+These frequencies ensure a balance between real-time performance and stability.
+
+### 5.6 Paddle and Ranger Control
+
+This section describes the paddle (input device) control system and its integration with ranger (mobile base) control, including velocity command fusion, intent computation, and LiDAR-driven haptic feedback.
+
+#### 5.6.1 Paddle Input Device
+
+The paddle is a 3-DOF input device (X: forward/backward, Y: left/right, Z: rotation) that maps motor positions to velocity commands through clamping, deadzone, and linear scaling. When angular velocity (Z) is non-zero, lateral velocity (Y) is set to 0 to avoid conflicts.
+
+#### 5.6.2 Velocity Command Fusion
+
+Paddle velocity and intent velocity are fused additively:
+
+$$\mathbf{v}_{\text{fused}} = \mathbf{v}_{\text{paddle}} + \mathbf{v}_{\text{intent}}$$
+
+If intent velocity is unavailable, only paddle velocity is used.
+
+#### 5.6.3 Intent Velocity Computation
+
+Intent velocity assists the operator when arms approach workspace limits. It's computed only for "stretched" arms (end-effector distance > threshold) with manipulability below threshold.
+
+**Single Arm**:
+$$\mathbf{d}_{\text{intent}} = w_{\text{target}} \cdot \hat{\mathbf{d}}_{\text{ee}} + w_{\text{grad}} \cdot \hat{\mathbf{d}}_{\text{grad}}$$
+
+where $\hat{\mathbf{d}}_{\text{ee}}$ is the normalized end-effector direction and $\hat{\mathbf{d}}_{\text{grad}}$ is the manipulability gradient direction.
+
+**Dual Arm** (weighted by manipulability deficit):
+$$w_i = \frac{\max(\text{threshold} - m_i, \epsilon)}{\sum_j \max(\text{threshold} - m_j, \epsilon)}$$
+
+$$\mathbf{d}_{\text{intent}} = \text{normalize}(w_{\text{left}} \cdot \mathbf{p}_{\text{left}} + w_{\text{right}} \cdot \mathbf{p}_{\text{right}})$$
+
+Arms with lower manipulability (higher deficit) receive higher weights.
+
+#### 5.6.4 LiDAR-Driven Haptic Feedback
+
+LiDAR scans generate repulsive forces that create haptic feedback on the paddle to warn of nearby obstacles.
+
+**Distance Weighting Function**:
+
+$$w(r) = \begin{cases}
+0 & r < r_{\min} - \delta \text{ or } r > r_{\text{far}} \\
+w_{\max} \cdot (3t^2 - 2t^3) & r_{\min} - \delta \leq r < r_{\min} \text{ (smoothstep)} \\
+w_{\max} \cdot (1 - \frac{r - r_{\min}}{r_{\text{far}} - r_{\min}})^2 & r_{\min} \leq r \leq r_{\text{far}} \text{ (quadratic)}
+\end{cases}$$
+
+where $t = \frac{r - (r_{\min} - \delta)}{\delta}$.
+
+**Repulsive Force**:
+
+$$\mathbf{F}_{\text{rep}} = -\frac{1}{N} \sum_{i=1}^{N} w(r_i) \cdot \hat{\mathbf{r}}_i$$
+
+The force is low-pass filtered and applied to paddle motors as position offsets when exceeding threshold, creating a "virtual force field" effect.
+
+#### 5.6.5 Topic Flow Summary
+
+```
+LiDAR Scan (/scan)
+    ↓
+paddle_haptic_client.py
+    ├─> Compute repulsive forces
+    ├─> Apply distance weighting
+    ├─> Low-pass filter
+    └─> Publish /repulsive_force_vector
+         ↓
+DmController (subscribes to /repulsive_force_vector)
+    ├─> Apply haptic to X-axis motor
+    ├─> Apply haptic to Y-axis motor
+    └─> Z-axis: no haptic
+
+Paddle Motors (/paddle/state)
+    ↓
+ranger_teleop_to_robot_paddle.py
+    ├─> Map motor positions to velocities
+    ├─> Apply deadzone and scaling
+    └─> Fuse with intent velocity
+         ↓
+/robot/intent_vel (from manipulability_base_control_node)
+    ↓
+Fused velocity command (/cmd_vel)
+    ↓
+Ranger base control
+```
+
+This integrated system enables intuitive mobile base control with automatic assistance when arms approach workspace limits and haptic warnings for obstacle avoidance.
