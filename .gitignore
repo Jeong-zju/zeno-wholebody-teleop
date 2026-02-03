@@ -1,5 +1,6 @@
 /data/*
 !/data/.gitkeep
+!/data/analyze_rosbag_stats.py
 
 /robot_side/piper_reachable_region/maps/*
 !/robot_side/piper_reachable_region/maps/.gitkeep

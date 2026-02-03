@@ -29,7 +29,7 @@ Parameters (with defaults):
      <arg name="urdf_path" default="$(find piper_description)/urdf/piper_description.urdf" doc="Path to urdf file" />
      <arg name="manip_threshold" default="0.175" />
      <arg name="base_vel_topic" default="/robot/intent_vel" />
-     <arg name="max_linear_vel" default="0.15" />
+     <arg name="max_linear_vel" default="0.05" />
      <arg name="stretch_radius" default="0.6" />
      <arg name="target_weight" default="1.0" />
      <arg name="gradient_weight" default="0.2" />

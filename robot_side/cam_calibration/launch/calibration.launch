@@ -3,7 +3,7 @@
     <!-- 标定-->
     <arg name="markers_x" default="3" />
     <arg name="markers_y" default="4" />
-    <arg name="marker_size" default="0.0564" />
+    <arg name="marker_size" default="0.0600" />
     <arg name="marker_separation" default="0.0057" />
 
     <!-- <include file="$(find piper_ctrl)/launch/piper_dual_robot_rviz.launch">

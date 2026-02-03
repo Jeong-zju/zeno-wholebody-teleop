@@ -2,7 +2,7 @@
 <launch>
     <!-- 目标板位姿检测节点 (camera→target) -->
 
-    <arg name="node_prefix" default="left"/>
+    <arg name="node_prefix" default="left" />
 
     <!-- 相机话题配置 -->
     <arg name="image_topic" default="/realsense_left/color/image_raw" />
@@ -16,7 +16,7 @@
     <!-- ArUco marker 检测参数 -->
     <arg name="markers_x" default="3" />
     <arg name="markers_y" default="4" />
-    <arg name="marker_size" default="0.0564" />  <!-- marker 边长 (米) -->
+    <arg name="marker_size" default="0.0600" />  <!-- marker 边长 (米) -->
     <arg name="marker_separation" default="0.0057" />  <!-- marker 间距 (米) -->
 
     <!-- 可视化 -->

@@ -22,7 +22,7 @@ z:
   name: joint0_motor
   max: 0.5
   min: -0.5
-  deadzone: 0.05
+  deadzone: 0.075
   max_vel: 1.5708
   reverse_input: false
   lock_output: false

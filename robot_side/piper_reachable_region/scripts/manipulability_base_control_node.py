@@ -42,6 +42,7 @@ import pytorch_kinematics as pk
 
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32
 
 # Import shared network definition
 from network import ReachabilityMLP
@@ -207,7 +208,13 @@ class ManipulabilityBaseControlNode:
             queue_size=1
         )
         self.cmd_vel_pub = rospy.Publisher(self.base_vel_topic, Twist, queue_size=1)
-        
+
+        # Publishers for manipulability metrics
+        self.manip_left_pub = rospy.Publisher('/robot/arm_left/manip', Float32, queue_size=1)
+        self.manip_left_norm_pub = rospy.Publisher('/robot/arm_left/manip_norm', Float32, queue_size=1)
+        self.manip_right_pub = rospy.Publisher('/robot/arm_right/manip', Float32, queue_size=1)
+        self.manip_right_norm_pub = rospy.Publisher('/robot/arm_right/manip_norm', Float32, queue_size=1)
+
         rospy.loginfo("ManipulabilityBaseControlNode initialized successfully")
     
     def normalize_xyz(self, xyz):
@@ -276,32 +283,32 @@ class ManipulabilityBaseControlNode:
     def compute_manipulability_from_model(self, ee_pos):
         """
         Compute manipulability at end-effector position using trained MLP model.
-        
+
         Args:
             ee_pos: (3,) array of end-effector position [x, y, z]
-            
+
         Returns:
-            manipulability: scalar manipulability score
+            tuple: (manipulability, manipulability_norm) - denormalized and normalized values
         """
         try:
             # Normalize position
             ee_pos_norm = self.normalize_xyz(ee_pos.reshape(1, -1))
-            
+
             # Query model
             with torch.no_grad():
                 ee_pos_tensor = torch.from_numpy(ee_pos_norm).float().to(self.device)
                 p_reach, m_pred = self.model(ee_pos_tensor)
-                
+
                 if m_pred is not None:
-                    m_pred = m_pred.squeeze().cpu().numpy()
+                    m_pred_norm = m_pred.squeeze().cpu().numpy()
                     # Denormalize manipulability
-                    m_pred = self.denormalize_manip(m_pred)
-                    return float(m_pred)
+                    m_pred = self.denormalize_manip(m_pred_norm)
+                    return float(m_pred), float(m_pred_norm)
                 else:
-                    return 0.0
+                    return 0.0, 0.0
         except Exception as e:
             rospy.logwarn(f"Failed to compute manipulability from model: {e}")
-            return 0.0
+            return 0.0, 0.0
     
     def compute_gradient_direction(self, ee_pos):
         """
@@ -580,8 +587,21 @@ class ManipulabilityBaseControlNode:
             rospy.logdebug(f"Arm stretch status - Left: {left_stretched} (dist: {np.linalg.norm(ee_pos_left):.3f}), Right: {right_stretched} (dist: {np.linalg.norm(ee_pos_right):.3f})")
             
             # Compute manipulability from model (only for stretched-out arms)
-            manip_left = self.compute_manipulability_from_model(ee_pos_left) if left_stretched else self.manip_threshold
-            manip_right = self.compute_manipulability_from_model(ee_pos_right) if right_stretched else self.manip_threshold
+            if left_stretched:
+                manip_left, manip_left_norm = self.compute_manipulability_from_model(ee_pos_left)
+            else:
+                manip_left, manip_left_norm = self.manip_threshold, 1.0
+
+            if right_stretched:
+                manip_right, manip_right_norm = self.compute_manipulability_from_model(ee_pos_right)
+            else:
+                manip_right, manip_right_norm = self.manip_threshold, 1.0
+
+            # Publish manipulability topics
+            self.manip_left_pub.publish(Float32(data=manip_left))
+            self.manip_left_norm_pub.publish(Float32(data=manip_left_norm))
+            self.manip_right_pub.publish(Float32(data=manip_right))
+            self.manip_right_norm_pub.publish(Float32(data=manip_right_norm))
             
             # rospy.loginfo(f"Manipulability - Left: {manip_left:.4f} (stretched: {left_stretched}), Right: {manip_right:.4f} (stretched: {right_stretched})")
             

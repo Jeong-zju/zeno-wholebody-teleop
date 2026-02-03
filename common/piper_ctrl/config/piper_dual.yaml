@@ -40,10 +40,12 @@ piper_ctrl_left_node:
   
   # Topic remapping (absolute paths)
   remap:
-    # joint_pos_cmd_to: "/robot/arm_left/vla_joint_cmd"
+    joint_pos_cmd_to: "/robot/arm_left/vla_joint_cmd"
+    gripper_pos_cmd_to: "/robot/arm_left/vla_joint_cmd"
+    # joint_pos_cmd_to: "/teleop/arm_left/joint_states_single"
+    # gripper_pos_cmd_to: "/teleop/arm_left/joint_states_single"
     # joint_pos_cmd_to: "/robot/arm_left/joint_pos_cmd"
-    joint_pos_cmd_to: "/teleop/arm_left/joint_states_single"
-    gripper_pos_cmd_to: "/teleop/arm_left/joint_states_single"
+    # gripper_pos_cmd_to: "/teleop/arm_left/joint_states_single"
 
 # Right arm robot node
 piper_ctrl_right_node:
@@ -75,10 +77,12 @@ piper_ctrl_right_node:
   
   # Topic remapping (absolute paths)
   remap:
-    # joint_pos_cmd_to: "/robot/arm_right/vla_joint_cmd"
+    joint_pos_cmd_to: "/robot/arm_right/vla_joint_cmd"
+    gripper_pos_cmd_to: "/robot/arm_right/vla_joint_cmd"
+    # joint_pos_cmd_to: "/teleop/arm_right/joint_states_single"
+    # gripper_pos_cmd_to: "/teleop/arm_right/joint_states_single"
     # joint_pos_cmd_to: "/robot/arm_right/joint_pos_cmd"
-    joint_pos_cmd_to: "/teleop/arm_right/joint_states_single"
-    gripper_pos_cmd_to: "/teleop/arm_right/joint_states_single"
+    # gripper_pos_cmd_to: "/teleop/arm_right/joint_states_single"
 
 # ============================================================================
 # Teleop side configuration (piper_dual_teleop.launch)

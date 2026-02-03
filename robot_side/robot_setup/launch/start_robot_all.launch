@@ -35,7 +35,7 @@
 
     <arg name="enable_lidar" default="true" />
     <arg name="enable_reachability" default="true" />
-    <arg name="enable_reachability_ctrl" default="true" />
+    <arg name="enable_reachability_ctrl" default="false" />
     <arg name="enable_lidar_force" default="true" />
 
     <!-- Setup robot_description for joint_state_publisher_gui if needed -->
@@ -84,7 +84,7 @@
 
             <!-- 彩色：D405 的 RGB 实际也是左目图像，分辨率和深度对齐，方便后处理 -->
             <arg name="enable_color" default="true" />
-            <arg name="color_width" default="848" />
+            <arg name="color_width" default="640" />
             <arg name="color_height" default="480" />
             <arg name="color_fps" default="30" />
 
@@ -117,11 +117,11 @@
 
             <!-- 深度后处理滤波链：降噪 + 填洞，适合近距离表面任务 -->
             <!-- decimation, spatial, temporal, hole_filling 是官方常用组合 -->
-            <arg name="filters" default="decimation,spatial,temporal,hole_filling" />
+            <!-- <arg name="filters" default="decimation,spatial,temporal,hole_filling" /> -->
 
             <!-- 只关心 60cm 内（D405 理想范围 7–50cm），顺便裁掉远处噪声 -->
             <!-- 单位是米；如果场景更近，可以改成 0.4 -->
-            <arg name="clip_distance" default="1.2" />
+            <arg name="clip_distance" default="0.5" />
 
             <!-- 曝光 / 增益：先交给自动曝光，后期用 rqt_reconfigure 再精调 -->
             <arg name="stereo_module/exposure/1" default="0" />
@@ -149,7 +149,7 @@
 
             <!-- 彩色：D405 的 RGB 实际也是左目图像，分辨率和深度对齐，方便后处理 -->
             <arg name="enable_color" default="true" />
-            <arg name="color_width" default="848" />
+            <arg name="color_width" default="640" />
             <arg name="color_height" default="480" />
             <arg name="color_fps" default="30" />
 
@@ -182,11 +182,11 @@
 
             <!-- 深度后处理滤波链：降噪 + 填洞，适合近距离表面任务 -->
             <!-- decimation, spatial, temporal, hole_filling 是官方常用组合 -->
-            <arg name="filters" default="decimation,spatial,temporal,hole_filling" />
+            <!-- <arg name="filters" default="decimation,spatial,temporal,hole_filling" /> -->
 
             <!-- 只关心 60cm 内（D405 理想范围 7–50cm），顺便裁掉远处噪声 -->
             <!-- 单位是米；如果场景更近，可以改成 0.4 -->
-            <arg name="clip_distance" default="1.2" />
+            <arg name="clip_distance" default="0.5" />
 
             <!-- 曝光 / 增益：先交给自动曝光，后期用 rqt_reconfigure 再精调 -->
             <arg name="stereo_module/exposure/1" default="0" />
@@ -222,7 +222,7 @@
 
             <!-- 彩色图，用 848x480@30，带宽压力小一点，方便做视觉检测 -->
             <arg name="enable_color" default="true" />
-            <arg name="color_width" default="848" />
+            <arg name="color_width" default="640" />
             <arg name="color_height" default="480" />
             <arg name="color_fps" default="30" />
 
