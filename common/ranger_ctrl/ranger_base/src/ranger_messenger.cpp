@@ -73,9 +73,9 @@ namespace westonrobot {
     void RangerROSMessenger::Run() {
         ros::Rate rate(update_rate_);
         while (ros::ok()) {
-            std::cerr << "fuck 1" << std::endl;
+            // std::cerr << "fuck 1" << std::endl;
             PublishStateToROS();
-            std::cerr << "fuck 1.1" << std::endl;
+            // std::cerr << "fuck 1.1" << std::endl;
             ros::spinOnce();
             rate.sleep();
         }
@@ -179,7 +179,7 @@ namespace westonrobot {
     void RangerROSMessenger::PublishStateToROS() {
         current_time_ = ros::Time::now();
 
-        std::cerr << "fuck 2" << std::endl;
+        // std::cerr << "fuck 2" << std::endl;
 
         static bool init_run = true;
         if (init_run) {
@@ -188,7 +188,7 @@ namespace westonrobot {
             return;
         }
 
-        std::cerr << "fuck 2.1" << std::endl;
+        // std::cerr << "fuck 2.1" << std::endl;
 
         // Protect concurrent access to robot_ object
         RangerCoreState state;
@@ -199,7 +199,7 @@ namespace westonrobot {
             actuator_state = robot_->GetActuatorState();
         }
 
-        std::cerr << "fuck 2.2" << std::endl;
+        // std::cerr << "fuck 2.2" << std::endl;
 
         // update odometry
         {
@@ -210,31 +210,31 @@ namespace westonrobot {
             last_time_ = current_time_;
         }
 
-        std::cerr << "fuck 2.3" << std::endl;
+        // std::cerr << "fuck 2.3" << std::endl;
 
         // publish system state
         {
-            std::cerr << "fuck 2.3.1" << std::endl;
+            // std::cerr << "fuck 2.3.1" << std::endl;
             ranger_msgs::SystemState system_msg;
-            std::cerr << "fuck 2.3.2" << std::endl;
+            // std::cerr << "fuck 2.3.2" << std::endl;
             system_msg.header.stamp = current_time_;
-            std::cerr << "fuck 2.3.3" << std::endl;
+            // std::cerr << "fuck 2.3.3" << std::endl;
             system_msg.vehicle_state = state.system_state.vehicle_state;
-            std::cerr << "fuck 2.3.4" << std::endl;
+            // std::cerr << "fuck 2.3.4" << std::endl;
             system_msg.control_mode = state.system_state.control_mode;
-            std::cerr << "fuck 2.3.5" << std::endl;
+            // std::cerr << "fuck 2.3.5" << std::endl;
             system_msg.error_code = state.system_state.error_code;
-            std::cerr << "fuck 2.3.6" << std::endl;
+            // std::cerr << "fuck 2.3.6" << std::endl;
             system_msg.battery_voltage = state.system_state.battery_voltage;
-            std::cerr << "fuck 2.3.7" << std::endl;
+            // std::cerr << "fuck 2.3.7" << std::endl;
             system_msg.motion_mode = state.motion_mode_state.motion_mode;
-            std::cerr << "fuck 2.3.8" << std::endl;
+            // std::cerr << "fuck 2.3.8" << std::endl;
             std::cerr << system_msg << std::endl;
-            // system_state_pub_.publish(system_msg);
-            std::cerr << "fuck 2.3.9" << std::endl;
+            system_state_pub_.publish(system_msg);
+            // std::cerr << "fuck 2.3.9" << std::endl;
         }
 
-        std::cerr << "fuck 2.4" << std::endl;
+        // std::cerr << "fuck 2.4" << std::endl;
 
         {
             ranger_msgs::RsStatus rs_status_msgs;
@@ -254,7 +254,7 @@ namespace westonrobot {
             rs_state_pub_.publish(rs_status_msgs);
         }
 
-        std::cerr << "fuck 2.5" << std::endl;
+        // std::cerr << "fuck 2.5" << std::endl;
 
         // publish motion mode
         {
@@ -267,7 +267,7 @@ namespace westonrobot {
             motion_state_pub_.publish(motion_msg);
         }
 
-        std::cerr << "fuck 2.6" << std::endl;
+        // std::cerr << "fuck 2.6" << std::endl;
 
         // publish actuator state
         {
@@ -329,7 +329,7 @@ namespace westonrobot {
             actuator_state_pub_.publish(actuator_msg);
         }
 
-        std::cerr << "fuck 2.7" << std::endl;
+        // std::cerr << "fuck 2.7" << std::endl;
 
         // publish BMS state
 
@@ -351,7 +351,7 @@ namespace westonrobot {
             batt_msg.Warning_Status_2 = bms_state.bms_extended_state.warn_status_2;
         }
 
-        std::cerr << "fuck 2.9" << std::endl;
+        // std::cerr << "fuck 2.9" << std::endl;
         // {
         //   auto common_sensor_state = robot_->GetCommonSensorState();
 
